@@ -5,13 +5,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class AccountServiceDto {
 
-    private int id;
+    private Long id;
     private String accountholderName;
-    private Long balance;
+    private Double balance;
+
+    public AccountServiceDto(){
+
+    }
+
+    public AccountServiceDto(Long id, String accountholderName, Double balance) {
+        this.id = id;
+        this.accountholderName = accountholderName;
+        this.balance = balance;
+    }
 
 
     
