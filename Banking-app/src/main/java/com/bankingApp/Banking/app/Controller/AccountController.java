@@ -1,5 +1,6 @@
 package com.bankingApp.Banking.app.Controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,5 +37,20 @@ public class AccountController {
         Double amount = request.get("amount");
         AccountServiceDto depositedMoney =  accountService.depositMoney( id,amount);
         return ResponseEntity.ok(depositedMoney);
+    }
+
+
+    @PutMapping("/{id}/withdraw")
+    public ResponseEntity<AccountServiceDto> withdrawAmount(@PathVariable Long id,@RequestBody Map<String,Double> request ){
+        Double amount = request.get("amount");
+        AccountServiceDto withdrawMoney = accountService.withdrawMoney(id, amount);
+        return ResponseEntity.ok(withdrawMoney);
+    }
+
+
+    @GetMapping("/all")
+    public ResponseEntity<List<AccountServiceDto>> getAllAccounts(){
+        List<AccountServiceDto> accounts = accountService.getAllAccounts();
+        return ResponseEntity.ok(accounts);
     }
 }
