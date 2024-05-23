@@ -53,4 +53,10 @@ public class AccountController {
         List<AccountServiceDto> accounts = accountService.getAllAccounts();
         return ResponseEntity.ok(accounts);
     }
+
+
+    public ResponseEntity<String> deleteAccountById(Long id){
+        accountService.deleteAccountById(id);
+        return ResponseEntity.ok("Account deleted successfully");
+    }
 }
