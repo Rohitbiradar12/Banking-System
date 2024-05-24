@@ -54,7 +54,11 @@ public class AccountController {
         return ResponseEntity.ok(accounts);
     }
 
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> dc24cc95e4f68c88a9b301f9477e059cc1172724
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<String> deleteAccountById(@PathVariable Long id){
         accountService.deleteAccountById(id);
