@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.hibernate.annotations.ManyToAny;
 
+import com.bankingApp.Banking.app.DTO.RoleDto;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

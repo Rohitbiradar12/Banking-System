@@ -1,8 +1,12 @@
 package com.bankingApp.Banking.app.Mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.bankingApp.Banking.app.DTO.AccountServiceDto;
 import com.bankingApp.Banking.app.Entity.Accounts;
 
+
+@Component
 public class AccountMapper {
     
     public static Accounts mapToAccount(AccountServiceDto accountServiceDto) {
