@@ -1,5 +1,6 @@
 package com.bankingApp.Banking.app.DTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.ManyToAny;
@@ -23,5 +24,5 @@ public class UserDto {
 
     private String password;
 
-    private List<RoleDto> rolesDto;
+    private List<RoleDto> rolesDto = new ArrayList<>();
 }

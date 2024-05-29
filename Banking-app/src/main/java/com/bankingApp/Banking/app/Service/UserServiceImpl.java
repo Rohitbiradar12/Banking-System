@@ -7,6 +7,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.bankingApp.Banking.app.DTO.UserDto;
 import com.bankingApp.Banking.app.Entity.Roles;
@@ -16,6 +17,10 @@ import com.bankingApp.Banking.app.Mapper.UserMapper;
 import com.bankingApp.Banking.app.Repository.RoleRepository;
 import com.bankingApp.Banking.app.Repository.UserRepository;
 
+import jakarta.annotation.PostConstruct;
+
+
+@Service
 public class UserServiceImpl implements UserService{
 
     private static final String ADMIN = "ADMIN";
@@ -131,6 +136,23 @@ public class UserServiceImpl implements UserService{
         } else {
             // Handle the case where user with the given ID is not found
             return Collections.emptyList(); // or throw an exception
+        }
+    }
+
+     @PostConstruct
+    public void initAdminUser() {
+        String adminUserName = "admin";
+        String adminPassword = "admin@123"; 
+
+        User existingAdmin = userRepository.findByUserName(adminUserName);
+        if (existingAdmin == null) {
+            User adminUser = new User();
+            adminUser.setUserName(adminUserName);
+            adminUser.setPassword(adminPassword); 
+            adminUser.setEnabled(true);
+            Roles adminRole = roleRepository.findRoleByRoleName(ADMIN);
+            adminUser.setRoles(Collections.singletonList(adminRole));
+            userRepository.save(adminUser);
         }
     }
     

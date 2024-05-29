@@ -31,7 +31,8 @@ public class User {
     private boolean enabled;
 
 
-    @ManyToAny(fetch = FetchType.EAGER)
+
+    @ManyToAny(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id"))

@@ -11,6 +11,6 @@ public class RoleDto {
 
     private String roleName;
 
-    private List<UserDto> userDto;
+    // private List<UserDto> userDto;
     
 }

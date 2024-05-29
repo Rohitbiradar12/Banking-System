@@ -45,4 +45,11 @@ public class UserController {
         List<String> roles = userService.getUserRole(id);
         return ResponseEntity.ok(roles);
     }
+
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<UserDto> deleteUser(@PathVariable Long id){
+        userService.deleteUser(id);
+        return null;
+        
+    }
 }
