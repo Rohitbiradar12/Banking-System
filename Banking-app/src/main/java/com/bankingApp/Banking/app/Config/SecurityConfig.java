@@ -38,23 +38,28 @@ public class SecurityConfig {
     }
 
 
-    @SuppressWarnings("deprecation")
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-            .authorizeRequests(authorizeRequests ->
-                authorizeRequests
-                    .requestMatchers("/user/register").permitAll() // Allow registration endpoint without authentication
-                    .requestMatchers("/api/accounts/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER") 
-                    .requestMatchers("/user/all").hasRole("ADMIN") 
-                    .anyRequest().authenticated() 
-            )
-            .formLogin(form -> form.defaultSuccessUrl("/default", true).permitAll()) // Configure form login
-            .logout(logout -> logout.permitAll()) 
-            .sessionManagement(sessionManagement -> 
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-
+        http
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/user/register", "/user/login").permitAll()
+                        .requestMatchers("/api/accounts/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER")
+                        .requestMatchers("/swagger-ui.html/**").hasRole("ADMIN")
+                        .requestMatchers("/**").permitAll())
+                .formLogin(login -> login
+                        .loginProcessingUrl("/userLogin")
+                         .successForwardUrl("/user")
+                        .permitAll())
+                .logout(logout -> logout // Configuring logout
+                        .logoutUrl("/logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll())
+                .csrf().disable()
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                        .maximumSessions(1)
+                        .expiredUrl("/login?expired"));
         return http.build();
     }
 
