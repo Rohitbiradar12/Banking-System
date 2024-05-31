@@ -32,7 +32,7 @@ public class User {
 
 
 
-    @ManyToAny(fetch = FetchType.LAZY)
+    @ManyToAny(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id"))

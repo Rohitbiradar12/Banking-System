@@ -1,6 +1,5 @@
 package com.bankingApp.Banking.app.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +52,6 @@ public class UserServiceImpl implements UserService {
             }
             user.setRoles(Collections.singletonList(role));
         }
-        user.setUserName(userDto.getUserName());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User savedUser = userRepository.save(user);
         return userMapper.mapToUserDto(savedUser);
@@ -71,14 +69,14 @@ public class UserServiceImpl implements UserService {
             existingUser.setUserName(userDto.getUserName());
             existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
             existingUser.setRoles(userDto.getRolesDto().stream()
-                .map(roleDto -> {
-                    Roles role = roleMapper.mapToRole(roleDto);
-                    if (role == null) {
-                        throw new RuntimeException("Role not found: " + roleDto.getRoleName());
-                    }
-                    return role;
-                })
-                .collect(Collectors.toList()));
+                    .map(roleDto -> {
+                        Roles role = roleMapper.mapToRole(roleDto);
+                        if (role == null) {
+                            throw new RuntimeException("Role not found: " + roleDto.getRoleName());
+                        }
+                        return role;
+                    })
+                    .collect(Collectors.toList()));
             User updatedUser = userRepository.save(existingUser);
             return userMapper.mapToUserDto(updatedUser);
         }
@@ -90,8 +88,11 @@ public class UserServiceImpl implements UserService {
         if (role == null) {
             throw new RuntimeException("Role not found: " + roleName);
         }
-        User user = userMapper.mapToUser(userDto);
-        user.setRoles(new ArrayList<>(Collections.singletonList(role)));
+        User user = userRepository.findById(userDto.getUserId()).orElse(null);
+        if (user == null) {
+            throw new RuntimeException("User not found: " + userDto.getUserId());
+        }
+        user.setRoles(Collections.singletonList(role));
         return userMapper.mapToUserDto(userRepository.save(user));
     }
 
@@ -110,8 +111,8 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
-            .map(userMapper::mapToUserDto)
-            .collect(Collectors.toList());
+                .map(userMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -139,8 +140,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
             return user.getRoles().stream()
-                .map(Roles::getRoleName)
-                .collect(Collectors.toList());
+                    .map(Roles::getRoleName)
+                    .collect(Collectors.toList());
         } else {
             return Collections.emptyList(); // or throw an exception
         }
@@ -148,7 +149,7 @@ public class UserServiceImpl implements UserService {
 
     @PostConstruct
     public void initAdminUser() {
-        initRoles(); // Initialize roles if not present
+        initRoles(); 
 
         String adminUserName = "admin";
         String adminPassword = "admin@123";
@@ -161,7 +162,10 @@ public class UserServiceImpl implements UserService {
             adminUser.setEnabled(true);
             Roles adminRole = roleRepository.findRoleByRoleName(ADMIN);
             if (adminRole == null) {
-                throw new RuntimeException("Role not found: " + ADMIN);
+                adminRole = new Roles();
+                adminRole.setRoleName(ADMIN);
+                adminRole.setUsers(Collections.singletonList(adminUser)); // Associate admin user with admin role
+                roleRepository.save(adminRole);
             }
             adminUser.setRoles(Collections.singletonList(adminRole));
             userRepository.save(adminUser);
@@ -169,7 +173,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void initRoles() {
-        String[] roles = {ADMIN, CUSTOMER_SERVICE, MANAGER, USER, CASHIER};
+        String[] roles = { ADMIN, CUSTOMER_SERVICE, MANAGER, USER, CASHIER };
         for (String role : roles) {
             if (roleRepository.findRoleByRoleName(role) == null) {
                 Roles newRole = new Roles();
