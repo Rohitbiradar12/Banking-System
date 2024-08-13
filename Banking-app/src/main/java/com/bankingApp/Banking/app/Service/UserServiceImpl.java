@@ -46,17 +46,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = userMapper.mapToUser(userDto);
+    
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            Roles role = roleRepository.findByRoleName(USER).get();
-            if (role == null) {
-                throw new RuntimeException("Default role USER not found");
-            }
-            user.setRoles(Collections.singletonList(role));
+            Roles defaultRole = roleRepository.findByRoleName("USER")
+                .orElseThrow(() -> new RuntimeException("Default role USER not found"));
+    
+            user.setRoles(Collections.singletonList(defaultRole));
+        } else {
+            // Map provided role to Role entity
+            Roles userRole = roleRepository.findByRoleName(userDto.getRole())
+                .orElseThrow(() -> new RuntimeException("Role not found: " + userDto.getRole()));
+    
+            user.setRoles(Collections.singletonList(userRole));
         }
+    
+      
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+    
         User savedUser = userRepository.save(user);
+    
         return userMapper.mapToUserDto(savedUser);
     }
+    
 
     @Override
     public void deleteUser(long userId) {
