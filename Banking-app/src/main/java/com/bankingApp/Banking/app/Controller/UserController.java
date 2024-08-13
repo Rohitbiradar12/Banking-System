@@ -80,6 +80,12 @@ public ResponseEntity<String> loginUser(@RequestBody LoginRequestDto loginReques
         
     }
 
+    // @GetMapping
+    // public ResponseEntity<String> successHandler(){
+    //     return ResponseEntity.ok("success");
+    // }
+
+
     @GetMapping
     public ResponseEntity<String> successHandler(){
         return ResponseEntity.ok("success");

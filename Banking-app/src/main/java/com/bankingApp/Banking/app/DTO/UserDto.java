@@ -24,5 +24,5 @@ public class UserDto {
 
     private String password;
 
-    private List<RoleDto> rolesDto = new ArrayList<>();
+    private String role;
 }

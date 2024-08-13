@@ -2,6 +2,7 @@ package com.bankingApp.Banking.app.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         User user = userMapper.mapToUser(userDto);
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            Roles role = roleRepository.findRoleByRoleName(USER);
+            Roles role = roleRepository.findByRoleName(USER).get();
             if (role == null) {
                 throw new RuntimeException("Default role USER not found");
             }
@@ -61,40 +62,46 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(long userId) {
         userRepository.deleteById(userId);
     }
-
+    
     @Override
     public UserDto updateUser(long id, UserDto userDto) {
         User existingUser = userRepository.findById(id).orElse(null);
         if (existingUser != null) {
             existingUser.setUserName(userDto.getUserName());
             existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
-            existingUser.setRoles(userDto.getRolesDto().stream()
-                    .map(roleDto -> {
-                        Roles role = roleMapper.mapToRole(roleDto);
-                        if (role == null) {
-                            throw new RuntimeException("Role not found: " + roleDto.getRoleName());
-                        }
-                        return role;
-                    })
-                    .collect(Collectors.toList()));
+    
+            // Handle single role name instead of a list of RoleDto
+            if (userDto.getRole() != null) {
+                Roles role = roleRepository.findByRoleName(userDto.getRole())
+                    .orElseThrow(() -> new RuntimeException("Role not found: " + userDto.getRole()));
+                existingUser.setRoles(Collections.singletonList(role)); // Set single role
+            } else {
+                existingUser.setRoles(Collections.emptyList()); // Clear roles if no role provided
+            }
+    
             User updatedUser = userRepository.save(existingUser);
             return userMapper.mapToUserDto(updatedUser);
         }
-        return null; // or throw an exception if user not found
+        throw new RuntimeException("User not found: " + id); // Better to throw an exception if user not found
     }
+    
 
     public UserDto changeRole(UserDto userDto, String roleName) {
-        Roles role = roleRepository.findRoleByRoleName(roleName);
-        if (role == null) {
-            throw new RuntimeException("Role not found: " + roleName);
-        }
-        User user = userRepository.findById(userDto.getUserId()).orElse(null);
-        if (user == null) {
-            throw new RuntimeException("User not found: " + userDto.getUserId());
-        }
-        user.setRoles(Collections.singletonList(role));
-        return userMapper.mapToUserDto(userRepository.save(user));
+        // Find the role by name
+        Roles role = roleRepository.findByRoleName(roleName)
+            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+        
+        // Find the user by ID
+        User user = userRepository.findById(userDto.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found: " + userDto.getUserId()));
+        
+        // Update user roles
+        user.setRoles(Collections.singletonList(role)); // Set single role
+    
+        User updatedUser = userRepository.save(user);
+        return userMapper.mapToUserDto(updatedUser);
     }
+    
 
     @Override
     public UserDto changeRoleToAdmin(UserDto userDto) {
@@ -153,6 +160,7 @@ public class UserServiceImpl implements UserService {
 
         String adminUserName = "admin";
         String adminPassword = "admin@123";
+        String adminRoleName = "ADMIN";
 
         User existingAdmin = userRepository.findByUserName(adminUserName);
         if (existingAdmin == null) {
@@ -160,7 +168,7 @@ public class UserServiceImpl implements UserService {
             adminUser.setUserName(adminUserName);
             adminUser.setPassword(passwordEncoder.encode(adminPassword)); // Encode the password
             adminUser.setEnabled(true);
-            Roles adminRole = roleRepository.findRoleByRoleName(ADMIN);
+            Roles adminRole = roleRepository.findByRoleName(adminRoleName).get();
             if (adminRole == null) {
                 adminRole = new Roles();
                 adminRole.setRoleName(ADMIN);
@@ -175,7 +183,7 @@ public class UserServiceImpl implements UserService {
     private void initRoles() {
         String[] roles = { ADMIN, CUSTOMER_SERVICE, MANAGER, USER, CASHIER };
         for (String role : roles) {
-            if (roleRepository.findRoleByRoleName(role) == null) {
+            if (roleRepository.findByRoleName(role) == null) {
                 Roles newRole = new Roles();
                 newRole.setRoleName(role);
                 roleRepository.save(newRole);
